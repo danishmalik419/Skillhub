@@ -1,97 +1,223 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { auth } from '../lib/auth';
-import { UserPlus } from 'lucide-react';
+import React, { useState } from "react";
+import { Check, Mail, User, KeyRound, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const Signup: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Signup = () => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    acceptTerms: false
+  });
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const navigate = useNavigate();
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.username) {
+      newErrors.username = "Username is required";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])/.test(formData.password)) {
+      newErrors.password = "Password must include uppercase, lowercase, number, and special character";
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    if (!formData.acceptTerms) {
+      newErrors.acceptTerms = "You must accept the terms and conditions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSignup = (e) => {
     e.preventDefault();
-    try {
-      const { error } = await auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      navigate('/login');
-    } catch (error: any) {
-      setError(error.message);
+    if (validateForm()) {
+      console.log("Signup Data:", formData);
+      navigate("/login");
     }
   };
 
-  return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <UserPlus className="mx-auto h-12 w-12 text-indigo-600" />
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSignup}>
-          {error && (
-            <div className="bg-red-50 text-red-500 p-4 rounded-md text-center">
-              {error}
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
-            </div>
-          </div>
+  const handleChange = (prop) => (e) => {
+    setFormData({
+      ...formData,
+      [prop]: prop === 'acceptTerms' ? e.target.checked : e.target.value
+    });
+  };
 
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Sign up
-            </button>
-          </div>
-        </form>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center p-6">
+      <div className="w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-8 space-y-8">
         <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign in
-            </Link>
+          <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto flex items-center justify-center mb-6">
+            <User className="h-10 w-10 text-white" />
+          </div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Create Account
+          </h2>
+          <p className="text-gray-600 mt-2">
+            Join our community and start your journey
           </p>
         </div>
+
+        <form onSubmit={handleSignup} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Username
+            </label>
+            <div className="relative group">
+              <User className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+              <input
+                type="text"
+                placeholder="Enter username"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-blue-500"
+                value={formData.username}
+                onChange={handleChange('username')}
+              />
+            </div>
+            {errors.username && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="inline-block">⚠️</span> {errors.username}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <div className="relative group">
+              <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+              <input
+                type="email"
+                placeholder="Enter email"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-blue-500"
+                value={formData.email}
+                onChange={handleChange('email')}
+              />
+            </div>
+            {errors.email && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="inline-block">⚠️</span> {errors.email}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <div className="relative group">
+              <KeyRound className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter password"
+                className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-blue-500"
+                value={formData.password}
+                onChange={handleChange('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-blue-500 transition-colors"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="inline-block">⚠️</span> {errors.password}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
+            <div className="relative group">
+              <KeyRound className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm password"
+                className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-blue-500"
+                value={formData.confirmPassword}
+                onChange={handleChange('confirmPassword')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-blue-500 transition-colors"
+              >
+                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="inline-block">⚠️</span> {errors.confirmPassword}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="terms"
+              className="h-5 w-5 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+              checked={formData.acceptTerms}
+              onChange={handleChange('acceptTerms')}
+            />
+            <label htmlFor="terms" className="text-sm text-gray-600">
+              I accept the <a href="#" className="text-blue-500 hover:underline">terms and conditions</a>
+            </label>
+          </div>
+          {errors.acceptTerms && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <span className="inline-block">⚠️</span> {errors.acceptTerms}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+          >
+            Create Account
+          </button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300" />
+            </div>
+          </div>
+          <p className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <a href="/login" className="font-medium text-blue-500 hover:text-blue-600 hover:underline">
+              Sign in
+            </a>
+          </p>
+        </form>
       </div>
     </div>
   );

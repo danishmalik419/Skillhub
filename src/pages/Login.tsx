@@ -1,104 +1,241 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { auth } from '../lib/auth';
-import { LogIn } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { 
+  TextField, 
+  Button, 
+  Box, 
+  Typography, 
+  Container, 
+  InputAdornment, 
+  IconButton,
+  Card,
+  CardContent,
+  Alert,
+  Paper
+} from "@mui/material";
+import { 
+  Visibility, 
+  VisibilityOff, 
+  LockOutlined, 
+  PersonOutlined,
+  EmailOutlined
+} from "@mui/icons-material";
 
-interface LoginProps {
-  setIsAuthenticated: (value: boolean) => void;
-}
-
-const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = () => {
   const navigate = useNavigate();
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!credentials.username || !credentials.password) {
+      setError("Please enter both username and password");
+      return;
+    }
+
+    if (credentials.username.length < 3) {
+      setError("Username must be at least 3 characters long");
+      return;
+    }
+
+    if (credentials.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     try {
-      const { error } = await auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      setIsAuthenticated(true);
-      navigate('/');
-    } catch (error: any) {
-      setError(error.message);
+      console.log("Attempting login", credentials);
+      navigate("/");
+    } catch (authError) {
+      setError("Login failed. Please check your credentials.");
     }
   };
 
-  return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <LogIn className="mx-auto h-12 w-12 text-indigo-600" />
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="bg-red-50 text-red-500 p-4 rounded-md text-center">
-              {error}
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
-            </div>
-          </div>
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
 
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+  return (
+    <Container 
+      maxWidth={false}
+      sx={{ 
+        display: 'flex', 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: 0
+      }}
+    >
+      <Container maxWidth="sm" sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center', 
+        py: 8
+      }}>
+        <Paper
+          elevation={8}
+          sx={{
+            borderRadius: 3,
+            overflow: 'hidden',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <Box sx={{ 
+            p: 4,
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center'
+          }}>
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3
+              }}
             >
-              Sign in
-            </button>
-          </div>
-        </form>
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign up
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+              <LockOutlined sx={{ fontSize: 40, color: 'white' }} />
+            </Box>
+
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                mb: 4, 
+                fontWeight: 700,
+                background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                backgroundClip: 'text',
+                textFillColor: 'transparent',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}
+            >
+              Welcome Back
+            </Typography>
+
+            {error && (
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  width: '100%', 
+                  mb: 3,
+                  borderRadius: 2
+                }}
+              >
+                {error}
+              </Alert>
+            )}
+
+            <form onSubmit={handleLogin} style={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                label="Username"
+                variant="outlined"
+                margin="normal"
+                value={credentials.username}
+                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonOutlined sx={{ color: '#667eea' }} />
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    borderRadius: 2,
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#667eea',
+                      },
+                    },
+                  }
+                }}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label="Password"
+                variant="outlined"
+                type={showPassword ? "text" : "password"}
+                value={credentials.password}
+                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlined sx={{ color: '#667eea' }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={handleClickShowPassword}
+                        edge="end"
+                        sx={{ color: '#667eea' }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    borderRadius: 2,
+                    '&:hover': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#667eea',
+                      },
+                    },
+                  }
+                }}
+              />
+
+              <Button 
+                type="submit" 
+                fullWidth 
+                variant="contained" 
+                sx={{ 
+                  mt: 4,
+                  mb: 2,
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontSize: '1.1rem',
+                  textTransform: 'none',
+                  background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                  boxShadow: '0 3px 5px 2px rgba(102, 126, 234, .3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #5a6fd6 30%, #6a439c 90%)',
+                  }
+                }}
+              >
+                Sign In
+              </Button>
+            </form>
+
+            <Typography variant="body1" sx={{ mt: 3, color: 'text.secondary' }}>
+              Don't have an account?{' '}
+              <Typography
+                component="a"
+                href="/signup"
+                sx={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  '&:hover': {
+                    color: '#764ba2',
+                    textDecoration: 'underline',
+                  }
+                }}
+              >
+                Sign up
+              </Typography>
+            </Typography>
+          </Box>
+        </Paper>
+      </Container>
+    </Container>
   );
 };
 
